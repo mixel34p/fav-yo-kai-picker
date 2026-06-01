@@ -5,8 +5,10 @@ import {
 } from './image-url.js';
 
 const HTML2CANVAS_SRC = new URL('../vendor/html2canvas.min.js', import.meta.url).href;
-const MAX_EXPORT_SCALE = 3;
-const MIN_EXPORT_SCALE = 2;
+const EXPORT_SCALE = 2;
+const DESKTOP_GAME_WIDTH = 96;
+const DESKTOP_TRIBE_WIDTH = 96;
+const DESKTOP_FAVORITE_WIDTH = 132;
 
 let html2canvasLoader = null;
 let placeholderDataUrl = null;
@@ -16,10 +18,8 @@ export async function exportGridAsPng(gridElement) {
     throw new Error('Grid element not found.');
   }
 
-  const scale = Math.min(MAX_EXPORT_SCALE, Math.max(MIN_EXPORT_SCALE, window.devicePixelRatio || 2));
-  const width = Math.ceil(gridElement.scrollWidth);
-  const height = Math.ceil(gridElement.scrollHeight);
-  const frame = buildExportFrame(gridElement, width, height);
+  const width = getDesktopExportWidth(gridElement);
+  const frame = buildExportFrame(gridElement, width);
 
   const mount = document.createElement('div');
   mount.className = 'export-mount export-mount--capture';
@@ -38,7 +38,7 @@ export async function exportGridAsPng(gridElement) {
 
     const canvas = await html2canvas(frame, {
       backgroundColor: '#0b0b10',
-      scale,
+      scale: EXPORT_SCALE,
       useCORS: true,
       allowTaint: false,
       logging: false,
@@ -63,12 +63,15 @@ export async function exportGridAsPng(gridElement) {
   }
 }
 
-function buildExportFrame(gridElement, width, height) {
+function buildExportFrame(gridElement, width) {
   const clone = gridElement.cloneNode(true);
   clone.classList.add('is-exporting');
   clone.style.width = `${width}px`;
   clone.style.maxHeight = 'none';
   clone.style.overflow = 'visible';
+  clone.style.setProperty('--game-width', `${DESKTOP_GAME_WIDTH}px`);
+  clone.style.setProperty('--tribe-width', `${DESKTOP_TRIBE_WIDTH}px`);
+  clone.style.setProperty('--favorite-width', `${DESKTOP_FAVORITE_WIDTH}px`);
 
   const frame = document.createElement('div');
   frame.className = 'export-frame';
@@ -92,6 +95,12 @@ function buildExportFrame(gridElement, width, height) {
 
   frame.append(header, body, footer);
   return frame;
+}
+
+function getDesktopExportWidth(gridElement) {
+  const tribeCount = gridElement.querySelectorAll('.matrix .tribe-header').length;
+  const matrixWidth = DESKTOP_GAME_WIDTH + (tribeCount * DESKTOP_TRIBE_WIDTH) + DESKTOP_FAVORITE_WIDTH;
+  return Math.max(matrixWidth, DESKTOP_GAME_WIDTH + DESKTOP_FAVORITE_WIDTH);
 }
 
 function formatExportDate() {

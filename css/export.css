@@ -88,9 +88,45 @@
 
 .export-frame .yokai-grid,
 .export-frame .yokai-grid.is-exporting {
+  --game-width: 96px;
+  --tribe-width: 96px;
+  --favorite-width: 132px;
   max-height: none !important;
   overflow: visible !important;
   background: #111;
+}
+
+.export-frame .is-exporting .tribe-header {
+  min-height: 82px !important;
+}
+
+.export-frame .is-exporting .tribe-header span {
+  font-size: 12px !important;
+}
+
+.export-frame .is-exporting .game-header,
+.export-frame .is-exporting .matrix-cell,
+.export-frame .is-exporting .overall-row-header {
+  min-height: 104px !important;
+}
+
+.export-frame .is-exporting .cell-favorite-image {
+  width: 88px !important;
+  height: 98px !important;
+}
+
+.export-frame .is-exporting .matrix-favorite {
+  min-height: 120px !important;
+}
+
+.export-frame .is-exporting .extra-favorites {
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)) !important;
+  gap: 20px 28px !important;
+  padding: 22px 58px 26px !important;
+}
+
+.export-frame .is-exporting .overall-favorite-label {
+  font-size: 13px !important;
 }
 
 .export-frame .is-exporting .clear-slot,
