@@ -390,7 +390,7 @@ async function runImageExport(button) {
     console.error(error);
     openOutputDialog(
       'Exportar imagen',
-      'No se pudo generar el PNG. Espera a que carguen las imágenes de los Yo-kai e inténtalo de nuevo.',
+      `No se pudo generar el PNG (${error?.message || 'error desconocido'}). Recarga la página con Ctrl+F5 e inténtalo de nuevo cuando las imágenes hayan cargado.`,
       false,
     );
   } finally {

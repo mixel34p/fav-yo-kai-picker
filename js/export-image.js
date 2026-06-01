@@ -4,7 +4,7 @@ import {
   PLACEHOLDER_IMAGE,
 } from './image-url.js';
 
-const HTML2CANVAS_URL = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm';
+const HTML2CANVAS_SRC = new URL('../vendor/html2canvas.min.js', import.meta.url).href;
 const MAX_EXPORT_SCALE = 3;
 const MIN_EXPORT_SCALE = 2;
 
@@ -22,7 +22,7 @@ export async function exportGridAsPng(gridElement) {
   const frame = buildExportFrame(gridElement, width, height);
 
   const mount = document.createElement('div');
-  mount.className = 'export-mount';
+  mount.className = 'export-mount export-mount--capture';
   mount.append(frame);
   document.body.append(mount);
 
@@ -33,27 +33,31 @@ export async function exportGridAsPng(gridElement) {
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
     const html2canvas = await loadHtml2Canvas();
+    const captureWidth = frame.offsetWidth || frame.scrollWidth;
+    const captureHeight = frame.offsetHeight || frame.scrollHeight;
+
     const canvas = await html2canvas(frame, {
-      backgroundColor: null,
+      backgroundColor: '#0b0b10',
       scale,
       useCORS: true,
       allowTaint: false,
       logging: false,
-      width: frame.offsetWidth,
-      height: frame.offsetHeight,
-      windowWidth: frame.scrollWidth,
-      windowHeight: frame.scrollHeight,
-      onclone: (documentClone) => {
-        const clonedFrame = documentClone.querySelector('.export-frame');
-        if (clonedFrame) {
-          clonedFrame.style.opacity = '1';
-        }
-      },
+      width: captureWidth,
+      height: captureHeight,
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: captureWidth,
+      windowHeight: captureHeight,
+      foreignObjectRendering: false,
     });
 
-    const blob = await canvasToPngBlob(canvas);
-    downloadBlob(blob, buildFilename());
-    return blob;
+    if (!canvas || canvas.width === 0 || canvas.height === 0) {
+      throw new Error('Empty canvas from html2canvas.');
+    }
+
+    const pngBlob = await canvasToPngBlob(canvas);
+    downloadPng(pngBlob, buildFilename());
+    return pngBlob;
   } finally {
     mount.remove();
   }
@@ -103,27 +107,85 @@ function buildFilename() {
   return `yokai-favoritos-${stamp}.png`;
 }
 
-async function loadHtml2Canvas() {
+function loadHtml2Canvas() {
+  if (window.html2canvas) {
+    return Promise.resolve(window.html2canvas);
+  }
+
   if (!html2canvasLoader) {
-    html2canvasLoader = import(HTML2CANVAS_URL).then((module) => module.default);
+    html2canvasLoader = new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[data-html2canvas]');
+      if (existing) {
+        existing.addEventListener('load', () => {
+          if (window.html2canvas) {
+            resolve(window.html2canvas);
+          } else {
+            reject(new Error('html2canvas loaded but is unavailable.'));
+          }
+        }, { once: true });
+        existing.addEventListener('error', () => reject(new Error('html2canvas script failed.')), { once: true });
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = HTML2CANVAS_SRC;
+      script.async = true;
+      script.dataset.html2canvas = 'true';
+      script.onload = () => {
+        if (window.html2canvas) {
+          resolve(window.html2canvas);
+          return;
+        }
+
+        reject(new Error('html2canvas loaded but is unavailable.'));
+      };
+      script.onerror = () => reject(new Error(`Could not load html2canvas from ${HTML2CANVAS_SRC}`));
+      document.head.append(script);
+    });
   }
 
   return html2canvasLoader;
 }
 
 async function canvasToPngBlob(canvas) {
-  const blob = await new Promise((resolve, reject) => {
-    canvas.toBlob((value) => {
-      if (value) {
-        resolve(value);
-        return;
-      }
+  const fromBlob = await new Promise((resolve) => {
+    if (!canvas.toBlob) {
+      resolve(null);
+      return;
+    }
 
-      reject(new Error('Canvas did not create a PNG blob.'));
-    }, 'image/png', 1);
+    canvas.toBlob((value) => resolve(value), 'image/png', 1);
   });
 
-  return blob;
+  if (fromBlob && fromBlob.type === 'image/png') {
+    return fromBlob;
+  }
+
+  const dataUrl = canvas.toDataURL('image/png');
+  if (!dataUrl.startsWith('data:image/png')) {
+    throw new Error('Canvas did not produce PNG data.');
+  }
+
+  const response = await fetch(dataUrl);
+  const blob = await response.blob();
+  return new Blob([blob], { type: 'image/png' });
+}
+
+function downloadPng(blob, filename) {
+  const pngBlob = blob.type === 'image/png'
+    ? blob
+    : new Blob([blob], { type: 'image/png' });
+
+  const url = URL.createObjectURL(pngBlob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename.endsWith('.png') ? filename : `${filename}.png`;
+  link.type = 'image/png';
+  link.rel = 'noopener';
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
 async function inlineImages(root) {
@@ -194,16 +256,4 @@ function blobToDataUrl(blob) {
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
-}
-
-function downloadBlob(blob, filename) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.rel = 'noopener';
-  document.body.append(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
