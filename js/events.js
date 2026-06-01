@@ -1,7 +1,7 @@
 import { EXTRA_TRIBE_FAVORITES } from './config.js';
 import { filterYokaiByCategory } from './yokai-categories.js';
 import { applyFilters } from './filters.js';
-import { exportGridAsPng } from './export-image.js?v=3';
+import { exportGridAsPng } from './export-image.js?v=4';
 import {
   getDisplayImageUrl,
   getImgurProxyUrl,

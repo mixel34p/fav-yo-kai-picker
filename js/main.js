@@ -1,7 +1,7 @@
 import { fetchAllYokai } from './api.js';
 import { EXCLUDED_GAMES, EXCLUDED_TRIBES, EXTRA_TRIBE_FAVORITES, GAME_ORDER, TRIBE_ORDER } from './config.js';
 import { CATEGORY_FAVORITES } from './yokai-categories.js';
-import { refreshFilters, wireEvents } from './events.js?v=3';
+import { refreshFilters, wireEvents } from './events.js?v=4';
 import { normalizeImageUrl } from './image-url.js';
 import { renderAll, setLoading, showError, hideError } from './render.js';
 import { restoreState, setAllYokai, setSlotDefinitions, state } from './state.js';

@@ -22,7 +22,14 @@
           <input id="search-input" type="search" autocomplete="off" placeholder="Yo-kai name">
         </div>
         <div class="header-actions">
-          <a class="button button-primary kofi-button" href="https://ko-fi.com/mixel34" target="_blank" rel="noopener noreferrer">Ko-fi</a>
+          <a class="button button-primary kofi-button" href="https://ko-fi.com/mixel34" target="_blank" rel="noopener noreferrer" aria-label="Support me on Ko-fi">
+            <svg class="kofi-icon" viewBox="0 0 64 44" aria-hidden="true" focusable="false">
+              <path d="M8 2h37a13 13 0 0 1 0 26h-3c-2 8-9 14-18 14H8A6 6 0 0 1 2 36V8a6 6 0 0 1 6-6Z" fill="#fff"/>
+              <path d="M46 10h-4v10h4a5 5 0 0 0 0-10Z" fill="#29abe0"/>
+              <path d="M24 32 13 21c-6-6 2-16 9-9l2 2 2-2c7-7 15 3 9 9L24 32Z" fill="#ff5f5f"/>
+            </svg>
+            <span>Support me!</span>
+          </a>
           <button class="button button-primary download-button" id="export-image-button" type="button">Download PNG</button>
         </div>
       </header>
@@ -80,6 +87,6 @@
     </dialog>
 
     <script src="vendor/html2canvas.min.js" defer></script>
-    <script type="module" src="js/main.js?v=3"></script>
+    <script type="module" src="js/main.js?v=4"></script>
   </body>
 </html>

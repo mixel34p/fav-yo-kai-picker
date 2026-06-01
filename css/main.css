@@ -128,12 +128,20 @@ button {
 }
 
 .kofi-button {
+  gap: 7px;
   min-height: 34px;
   border: 2px solid #8ee7ff;
   padding: 0 14px;
   background: linear-gradient(#35c8ff, #1e77d8 48%, #18438c);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38), 0 2px 0 #0a2554;
   letter-spacing: 0;
+}
+
+.kofi-icon {
+  width: 26px;
+  height: 18px;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
 }
 
 .button:hover {
