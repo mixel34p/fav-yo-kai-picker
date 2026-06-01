@@ -2,17 +2,17 @@ export const SUPABASE_URL = 'https://epdtcqnfmlwzejawhyhm.supabase.co';
 export const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwZHRjcW5mbWx3emVqYXdoeWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1NjgyMTIsImV4cCI6MjA2MzE0NDIxMn0.kGYE12oAgrU8RGMyVucBizAFsPX9vr0CZnB6l7Q5TK4';
 
 export const TRIBE_COLORS = {
-  Brave: '#E8312A',
-  Charming: '#E91E8C',
-  Mysterious: '#7B2D8B',
-  Tough: '#2196F3',
-  Heartful: '#FF9800',
-  Shady: '#607D8B',
-  Eerie: '#4CAF50',
-  Slippery: '#00BCD4',
-  Boss: '#FFD700',
-  Wicked: '#5B2373',
-  Enma: '#C53A2D',
+  Brave: '#D42018',
+  Charming: '#E6007A',
+  Mysterious: '#6A1B9A',
+  Tough: '#1565C0',
+  Heartful: '#EF6C00',
+  Shady: '#455A64',
+  Eerie: '#2E7D32',
+  Slippery: '#00838F',
+  Boss: '#F9A825',
+  Wicked: '#4A148C',
+  Enma: '#B71C1C',
 };
 
 export const STATIC_SLOTS = [
@@ -31,6 +31,7 @@ export const TRIBE_ORDER = [
   'Boss',
 ];
 
+/** Always shown in the extra favorites row (not tied to matrix tribes). */
 export const EXTRA_TRIBE_FAVORITES = [
   'Enma',
   'Wicked',
@@ -49,11 +50,11 @@ export const GAME_ORDER = [
 ];
 
 export const GAME_COLORS = {
-  'Yo-kai Watch 1': '#F4B536',
-  'Yo-kai Watch 2': '#4AA3DF',
-  'Yo-kai Watch 3': '#E95C4D',
-  'Yo-kai Watch 4': '#8E62D9',
-  'Yo-kai Watch Blasters': '#D94141',
+  'Yo-kai Watch 1': '#F5B700',
+  'Yo-kai Watch 2': '#2B8FE6',
+  'Yo-kai Watch 3': '#E53935',
+  'Yo-kai Watch 4': '#7E57C2',
+  'Yo-kai Watch Blasters': '#C62828',
 };
 
 export const EXCLUDED_GAMES = [

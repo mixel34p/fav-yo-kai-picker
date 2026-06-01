@@ -1,4 +1,5 @@
 import { EXTRA_TRIBE_FAVORITES } from './config.js';
+import { filterYokaiByCategory } from './yokai-categories.js';
 import { applyFilters } from './filters.js';
 import {
   getDirectImageUrl,
@@ -304,6 +305,10 @@ function getYokaiForSlot(slot) {
     return getChosenCellFavorites({ tribe });
   }
 
+  if (slot.type === 'category' || slot.id.startsWith('category-')) {
+    return filterYokaiByCategory(state.allYokai, slot.category);
+  }
+
   return state.allYokai;
 }
 
@@ -374,19 +379,89 @@ function buildCodeExport() {
 
 async function exportImage() {
   const target = document.querySelector('#yokai-grid');
+  const scale = Math.min(3, Math.max(2, window.devicePixelRatio || 2));
+  const padding = 24;
+  const titleHeight = 52;
+  const width = Math.ceil(target.scrollWidth);
+  const height = Math.ceil(target.scrollHeight);
+  const exportWidth = width + padding * 2;
+  const exportHeight = height + padding * 2 + titleHeight;
+
   const clone = target.cloneNode(true);
   clone.classList.add('is-exporting');
-  await inlineImages(clone);
-
-  const rect = target.getBoundingClientRect();
-  const width = Math.ceil(target.scrollWidth || rect.width);
-  const height = Math.ceil(target.scrollHeight || rect.height);
   clone.style.width = `${width}px`;
-  clone.style.height = `${height}px`;
   clone.style.maxHeight = 'none';
   clone.style.overflow = 'visible';
 
-  const css = [...document.styleSheets]
+  const frame = document.createElement('div');
+  frame.className = 'export-frame';
+  frame.style.width = `${exportWidth}px`;
+
+  const title = document.createElement('div');
+  title.className = 'export-title';
+  title.textContent = 'My Yo-kai Favorites';
+
+  const body = document.createElement('div');
+  body.className = 'export-body';
+  body.style.width = `${width}px`;
+  body.append(clone);
+
+  frame.append(title, body);
+
+  const mount = document.createElement('div');
+  mount.className = 'export-mount';
+  mount.append(frame);
+  document.body.append(mount);
+
+  try {
+    await document.fonts?.ready;
+    await inlineImages(frame);
+    await waitForImages(frame);
+
+    const css = getExportStylesheets();
+    const markup = buildSvgMarkup(frame, css, exportWidth, exportHeight);
+    const svgBlob = new Blob([markup], { type: 'image/svg+xml;charset=utf-8' });
+    const pngBlob = await svgToPngBlob(svgBlob, exportWidth, exportHeight, scale);
+    downloadBlob(pngBlob, 'yokai-favorites.png');
+  } catch (error) {
+    console.warn('PNG export failed, downloading SVG fallback.', error);
+    const css = getExportStylesheets();
+    const markup = buildSvgMarkup(frame, css, exportWidth, exportHeight);
+    downloadBlob(new Blob([markup], { type: 'image/svg+xml;charset=utf-8' }), 'yokai-favorites.svg');
+  } finally {
+    mount.remove();
+  }
+}
+
+function getExportStylesheets() {
+  const inlineExportCss = `
+    .export-mount { font-family: "Nunito", Arial, sans-serif; }
+    .export-frame {
+      box-sizing: border-box;
+      padding: 24px;
+      background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+      border: 4px solid #f5c542;
+      box-shadow: inset 0 0 0 2px #42230d;
+    }
+    .export-title {
+      margin: 0 0 16px;
+      color: #fff;
+      font-family: "Fredoka One", Arial, sans-serif;
+      font-size: 28px;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      text-align: center;
+      text-shadow: 0 2px 0 #000, 0 0 12px rgba(245, 197, 66, 0.35);
+    }
+    .export-body { margin: 0 auto; }
+    .is-exporting { max-height: none !important; overflow: visible !important; }
+    .is-exporting .matrix { border-color: rgba(0, 0, 0, 0.55); }
+    .overall-favorite-card.is-filled .overall-favorite-box {
+      box-shadow: inset 0 0 0 3px var(--extra-accent, #f5c542);
+    }
+  `;
+
+  const sheetCss = [...document.styleSheets]
     .map((sheet) => {
       try {
         return [...sheet.cssRules].map((rule) => rule.cssText).join('\n');
@@ -396,23 +471,14 @@ async function exportImage() {
     })
     .join('\n');
 
-  const markup = buildSvgMarkup(clone, css, width, height);
-  const svgBlob = new Blob([markup], { type: 'image/svg+xml;charset=utf-8' });
-
-  try {
-    const pngBlob = await svgToPngBlob(svgBlob, width, height);
-    downloadBlob(pngBlob, 'yokai-favorites.png');
-  } catch (error) {
-    console.warn('PNG export failed, downloading SVG fallback.', error);
-    downloadBlob(svgBlob, 'yokai-favorites.svg');
-  }
+  return `${sheetCss}\n${inlineExportCss}`;
 }
 
 function buildSvgMarkup(clone, css, width, height) {
   const namespace = 'http://www.w3.org/1999/xhtml';
   const wrapper = document.createElementNS(namespace, 'div');
   wrapper.setAttribute('xmlns', namespace);
-  wrapper.setAttribute('style', `width:${width}px;height:${height}px;background:#111;`);
+  wrapper.setAttribute('style', `width:${width}px;height:${height}px;`);
 
   const style = document.createElementNS(namespace, 'style');
   style.textContent = css;
@@ -421,7 +487,7 @@ function buildSvgMarkup(clone, css, width, height) {
   const serialized = new XMLSerializer().serializeToString(wrapper);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
   <foreignObject width="100%" height="100%">
     ${serialized}
   </foreignObject>
@@ -472,19 +538,22 @@ async function getPlaceholderDataUrl() {
   return placeholderDataUrl;
 }
 
-async function svgToPngBlob(svgBlob, width, height) {
+async function svgToPngBlob(svgBlob, width, height, scale = 2) {
   const svgUrl = URL.createObjectURL(svgBlob);
   try {
     const image = await loadImage(svgUrl);
     const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = Math.ceil(width * scale);
+    canvas.height = Math.ceil(height * scale);
     const context = canvas.getContext('2d');
-    context.fillStyle = '#111';
-    context.fillRect(0, 0, width, height);
-    context.drawImage(image, 0, 0);
+    context.fillStyle = '#0a0a0a';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.scale(scale, scale);
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = 'high';
+    context.drawImage(image, 0, 0, width, height);
 
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 1));
     if (!blob) {
       throw new Error('Canvas did not create a PNG blob.');
     }
@@ -493,6 +562,22 @@ async function svgToPngBlob(svgBlob, width, height) {
   } finally {
     URL.revokeObjectURL(svgUrl);
   }
+}
+
+function waitForImages(root) {
+  const images = [...root.querySelectorAll('img')];
+  return Promise.all(images.map((img) => {
+    if (img.complete && img.naturalWidth > 0) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      const done = () => resolve();
+      img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', done, { once: true });
+      window.setTimeout(done, 4000);
+    });
+  }));
 }
 
 function downloadBlob(blob, filename) {

@@ -1,4 +1,5 @@
 import { EXTRA_TRIBE_FAVORITES, GAME_COLORS, GAME_LOGOS, GAME_ORDER, TRIBE_COLORS, TRIBE_ICONS, TRIBE_ORDER } from './config.js';
+import { getCategoryColor } from './yokai-categories.js';
 import { getDisplayImageUrl } from './image-url.js';
 import { state } from './state.js';
 
@@ -81,7 +82,7 @@ export function renderGrid() {
   const tribes = state.filters.tribe === 'all'
     ? getMatrixTribes(state.allYokai)
     : [state.filters.tribe];
-  const extraFavoriteTribes = getExtraFavoriteTribes(state.allYokai);
+  const extraFavoriteTribes = getExtraFavoriteTribes();
   const byCell = groupByGameAndTribe(state.filtered);
   const columns = `var(--game-width) repeat(${tribes.length}, var(--tribe-width)) var(--favorite-width)`;
 
@@ -114,11 +115,9 @@ export function renderGrid() {
       ${tribes.map((tribe) => renderOverallMatrixCell(`tribe-${slugify(tribe)}`, tribe)).join('')}
       ${renderOverallMatrixCell('overall', 'Favorite', true)}
     </div>
-    ${extraFavoriteTribes.length ? `
-      <div class="extra-favorites">
-        ${extraFavoriteTribes.map((tribe) => renderOverallFavoriteCell(`tribe-${slugify(tribe)}`, `Favorite ${tribe}`)).join('')}
-      </div>
-    ` : ''}
+    <div class="extra-favorites">
+      ${extraFavoriteTribes.map((entry) => renderExtraFavoriteCell(entry)).join('')}
+    </div>
   `;
 }
 
@@ -222,9 +221,14 @@ function renderGameFavoriteMatrixCell(slotId, game) {
 }
 
 function renderOverallFavoriteCell(slotId, label) {
+  return renderExtraFavoriteCell({ slotId, label });
+}
+
+function renderExtraFavoriteCell({ slotId, label, accentColor }) {
   const yokai = state.favorites[slotId];
   const active = state.activeSlotId === slotId ? ' is-active' : '';
   const filled = yokai ? ' is-filled' : '';
+  const accent = accentColor ? ` style="--extra-accent:${accentColor}"` : '';
   const image = yokai
     ? `<img src="${imageSrc(yokai)}" alt="${escapeHtml(yokai.name)}" referrerpolicy="no-referrer">`
     : '<span class="slot-placeholder">?</span>';
@@ -233,7 +237,7 @@ function renderOverallFavoriteCell(slotId, label) {
     : '';
 
   return `
-    <div class="overall-favorite-card${active}${filled}" role="button" tabindex="0" data-slot-id="${escapeHtml(slotId)}" title="${escapeHtml(label)}">
+    <div class="overall-favorite-card${active}${filled}" role="button" tabindex="0" data-slot-id="${escapeHtml(slotId)}" title="${escapeHtml(label)}"${accent}>
       <span class="overall-favorite-label">${escapeHtml(label)}</span>
       <span class="overall-favorite-box">${image}${clearButton}</span>
     </div>
@@ -290,9 +294,20 @@ function getMatrixTribes(rows) {
   return TRIBE_ORDER.filter((tribe) => present.has(tribe));
 }
 
-function getExtraFavoriteTribes(rows) {
-  const present = new Set(rows.map((row) => row.tribe));
-  return EXTRA_TRIBE_FAVORITES.filter((tribe) => present.has(tribe));
+function getExtraFavoriteTribes() {
+  return EXTRA_TRIBE_FAVORITES.map((tribe) => ({
+    slotId: `tribe-${slugify(tribe)}`,
+    label: `Favorite ${tribe}`,
+    accentColor: getTribeColor(tribe),
+  })).concat(
+    state.slotDefinitions
+      .filter((slot) => slot.type === 'category')
+      .map((slot) => ({
+        slotId: slot.id,
+        label: slot.label,
+        accentColor: slot.color || getCategoryColor(slot.category),
+      })),
+  );
 }
 
 function groupByGameAndTribe(rows) {

@@ -1,5 +1,6 @@
 import { fetchAllYokai } from './api.js';
 import { EXCLUDED_GAMES, EXCLUDED_TRIBES, EXTRA_TRIBE_FAVORITES, GAME_ORDER, TRIBE_ORDER } from './config.js';
+import { CATEGORY_FAVORITES } from './yokai-categories.js';
 import { refreshFilters, wireEvents } from './events.js';
 import { normalizeImageUrl } from './image-url.js';
 import { renderAll, setLoading, showError, hideError } from './render.js';
@@ -70,16 +71,27 @@ function buildDynamicSlots(yokai) {
     type: 'game',
     game,
   }));
-  const tribes = getDistinct(yokai, 'tribe', [...TRIBE_ORDER, ...EXTRA_TRIBE_FAVORITES])
-    .filter((tribe) => TRIBE_ORDER.includes(tribe) || EXTRA_TRIBE_FAVORITES.includes(tribe))
-    .map((tribe) => ({
-      id: `tribe-${slugify(tribe)}`,
-      label: `${tribe} Favorite`,
-      type: 'tribe',
-      tribe,
-    }));
+  const tribeNames = [...new Set([
+    ...getDistinct(yokai, 'tribe', [...TRIBE_ORDER, ...EXTRA_TRIBE_FAVORITES])
+      .filter((tribe) => TRIBE_ORDER.includes(tribe) || EXTRA_TRIBE_FAVORITES.includes(tribe)),
+    ...EXTRA_TRIBE_FAVORITES,
+  ])];
+  const tribes = tribeNames.map((tribe) => ({
+    id: `tribe-${slugify(tribe)}`,
+    label: `${tribe} Favorite`,
+    type: 'tribe',
+    tribe,
+  }));
 
-  return [...cellSlots, ...games, ...tribes];
+  const categories = CATEGORY_FAVORITES.map((entry) => ({
+    id: entry.id,
+    label: entry.label,
+    type: 'category',
+    category: entry.category,
+    color: entry.color,
+  }));
+
+  return [...cellSlots, ...games, ...tribes, ...categories];
 }
 
 function getDistinct(rows, key, preferredOrder) {
