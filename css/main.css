@@ -1,0 +1,264 @@
+:root {
+  --bg: #05080f;
+  --ink: #ffffff;
+  --muted: #cfd8e6;
+  --line: rgba(0, 0, 0, 0.48);
+  --gold: #f5c542;
+  --red: #d72f24;
+  --panel: #000000;
+  --cell: #d8d5c9;
+  --font-pixel: "Nunito", Arial, sans-serif;
+  --font-display: "Fredoka One", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: #000;
+  font-family: var(--font-pixel);
+  font-size: 14px;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.26), rgba(0, 0, 0, 0.82)),
+    url("../assets/images/background.jpg") center / cover fixed;
+}
+
+.top-strip {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  align-items: center;
+  min-height: 46px;
+  padding: 6px 12px;
+  border-bottom: 2px solid #000;
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.filter-controls[hidden] {
+  display: none;
+}
+
+.top-strip label {
+  display: grid;
+  gap: 2px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.top-strip label span {
+  text-shadow: 0 1px 2px #000;
+}
+
+.top-strip select,
+.top-strip input {
+  width: 100%;
+  height: 28px;
+  border: 1px solid #555;
+  border-radius: 0;
+  color: #000;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.top-strip input {
+  padding: 0 8px;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.button[hidden] {
+  display: none;
+}
+
+.button {
+  min-height: 28px;
+  border: 1px solid #42230d;
+  border-radius: 0;
+  padding: 0 10px;
+  color: #fff;
+  background: linear-gradient(#e45736, #a81f19);
+  font-size: 12px;
+  font-weight: 900;
+  text-shadow: 0 1px 1px #000;
+}
+
+.download-button {
+  min-height: 34px;
+  border: 2px solid #f5c542;
+  padding: 0 16px;
+  background: linear-gradient(#ffcf4d, #e45736 48%, #a81f19);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38), 0 2px 0 #4a120e;
+  letter-spacing: 0;
+}
+
+.button:hover {
+  filter: brightness(1.12);
+}
+
+.picker-stage {
+  display: grid;
+  grid-template-rows: minmax(390px, 1fr);
+  min-height: calc(100vh - 56px);
+}
+
+.matrix-panel {
+  min-width: 0;
+  min-height: 0;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.matrix-status {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 22px;
+  padding: 3px 10px;
+  border-bottom: 1px solid #111;
+  color: #fff;
+  background: #000;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.matrix-status p {
+  margin: 0;
+}
+
+.loading-state,
+.error-state {
+  display: grid;
+  place-items: center;
+  min-height: 320px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.75);
+  font-weight: 900;
+  text-align: center;
+}
+
+.loading-state[hidden],
+.error-state[hidden] {
+  display: none;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 10px;
+  border: 4px solid rgba(255, 255, 255, 0.22);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.export-dialog {
+  width: min(720px, calc(100% - 24px));
+  border: 2px solid #111;
+  border-radius: 0;
+  padding: 0;
+  color: #fff;
+  background: #050505;
+}
+
+.export-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.dialog-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.dialog-heading,
+.dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dialog-heading h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 20px;
+}
+
+.icon-button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #555;
+  color: #fff;
+  background: #222;
+  font-weight: 900;
+}
+
+.dialog-actions {
+  justify-content: flex-end;
+}
+
+.export-dialog textarea,
+.dialog-input {
+  width: 100%;
+  border: 1px solid #777;
+  border-radius: 0;
+  color: #000;
+  background: #fff;
+  font-weight: 800;
+}
+
+.export-dialog textarea {
+  min-height: 260px;
+  padding: 10px;
+  resize: vertical;
+}
+
+.dialog-input {
+  height: 38px;
+  padding: 0 10px;
+}
+
+@media (max-width: 900px) {
+  .top-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .header-actions {
+    grid-column: 1 / -1;
+  }
+}

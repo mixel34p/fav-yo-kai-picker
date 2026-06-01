@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Ultimate Yo-kai Watch Favorite Picker">
+    <title>Ultimate Yo-kai Watch Favorite Picker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/grid.css">
+    <link rel="stylesheet" href="css/panel.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="top-strip">
+        <div class="filter-controls" hidden>
+          <select id="game-tabs" aria-label="Game filter"></select>
+          <select id="tribe-filters" aria-label="Tribe filter"></select>
+          <input id="search-input" type="search" autocomplete="off" placeholder="Yo-kai name">
+        </div>
+        <div class="header-actions">
+          <button class="button button-primary download-button" id="export-image-button" type="button">Download PNG</button>
+        </div>
+      </header>
+
+      <main class="picker-stage">
+        <section class="matrix-panel" aria-label="Yo-kai matrix">
+          <div class="matrix-status">
+            <p id="active-slot-label">Pick a row, column, or overall favorite cell.</p>
+            <p id="result-count">0 Yo-kai</p>
+          </div>
+          <div class="loading-state" id="loading-state" role="status" aria-live="polite">
+            <span class="spinner" aria-hidden="true"></span>
+            <span>Loading Yo-kai...</span>
+          </div>
+          <div class="error-state" id="error-state" hidden></div>
+          <div class="yokai-grid" id="yokai-grid" aria-label="Yo-kai results"></div>
+        </section>
+
+        <section class="bottom-panel" aria-label="Favorite selections" hidden>
+          <div class="helper-area">
+            <img src="assets/images/events/chest.png" alt="">
+            <p>Favorite cells are built into the matrix.</p>
+          </div>
+          <div class="favorite-slots" id="favorite-slots" hidden></div>
+          <div class="tribe-legend" id="tribe-legend"></div>
+          <p class="filled-counter" id="filled-count" hidden>0 filled</p>
+        </section>
+      </main>
+    </div>
+
+    <dialog class="export-dialog" id="export-dialog">
+      <form method="dialog" class="dialog-card">
+        <div class="dialog-heading">
+          <h2 id="dialog-title">Export</h2>
+          <button class="icon-button" type="submit" aria-label="Close dialog">x</button>
+        </div>
+        <textarea id="dialog-output" readonly></textarea>
+        <input id="dialog-input" class="dialog-input" type="text" autocomplete="off" hidden>
+        <div class="dialog-actions">
+          <button class="button button-secondary" id="copy-dialog-button" type="button">Copy</button>
+          <button class="button button-primary" id="apply-import-button" type="button" hidden>Import</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="yokai-menu-dialog" id="yokai-menu-dialog">
+      <form method="dialog" class="yokai-menu-card">
+        <div class="dialog-heading">
+          <h2 id="yokai-menu-title">Choose Yo-kai</h2>
+          <button class="icon-button" type="submit" aria-label="Close Yo-kai menu">x</button>
+        </div>
+        <div class="yokai-menu-note" id="yokai-menu-note"></div>
+        <div class="yokai-menu-list" id="yokai-menu-list"></div>
+      </form>
+    </dialog>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
