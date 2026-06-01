@@ -197,11 +197,11 @@ async function inlineImages(root) {
 
     try {
       const displayUrl = getDisplayImageUrl(source);
-      img.src = await fetchAsDataUrl(displayUrl);
+      img.src = await fetchAsPngDataUrl(displayUrl);
     } catch {
       try {
         const directUrl = getDirectImageUrl(source);
-        img.src = await fetchAsDataUrl(directUrl);
+        img.src = await fetchAsPngDataUrl(directUrl);
       } catch {
         img.src = await getPlaceholderDataUrl();
       }
@@ -209,14 +209,14 @@ async function inlineImages(root) {
   }));
 }
 
-async function fetchAsDataUrl(url) {
+async function fetchAsPngDataUrl(url) {
   const response = await fetch(url, { mode: 'cors', referrerPolicy: 'no-referrer' });
   if (!response.ok) {
     throw new Error(`Image request failed: ${response.status}`);
   }
 
   const blob = await response.blob();
-  return blobToDataUrl(blob);
+  return rasterizeBlobAsPngDataUrl(blob);
 }
 
 async function getPlaceholderDataUrl() {
@@ -225,7 +225,7 @@ async function getPlaceholderDataUrl() {
   }
 
   try {
-    placeholderDataUrl = await fetchAsDataUrl(PLACEHOLDER_IMAGE);
+    placeholderDataUrl = await fetchAsPngDataUrl(PLACEHOLDER_IMAGE);
   } catch {
     placeholderDataUrl = '';
   }
@@ -255,5 +255,75 @@ function blobToDataUrl(blob) {
     reader.onload = () => resolve(reader.result);
     reader.onerror = reject;
     reader.readAsDataURL(blob);
+  });
+}
+
+async function rasterizeBlobAsPngDataUrl(blob) {
+  const objectUrl = URL.createObjectURL(blob);
+
+  try {
+    return await rasterizeImageAsPngDataUrl(objectUrl);
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
+function rasterizeImageAsPngDataUrl(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+
+    image.onload = () => {
+      const width = image.naturalWidth || image.width;
+      const height = image.naturalHeight || image.height;
+
+      if (!width || !height) {
+        reject(new Error('Image has no drawable size.'));
+        return;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        reject(new Error('Could not create PNG canvas.'));
+        return;
+      }
+
+      try {
+        context.drawImage(image, 0, 0, width, height);
+      } catch (error) {
+        reject(error);
+        return;
+      }
+
+      if (!canvas.toBlob) {
+        const dataUrl = canvas.toDataURL('image/png');
+        if (!dataUrl.startsWith('data:image/png')) {
+          reject(new Error('Image did not rasterize as PNG.'));
+          return;
+        }
+
+        resolve(dataUrl);
+        return;
+      }
+
+      try {
+        canvas.toBlob((pngBlob) => {
+          if (!pngBlob || pngBlob.type !== 'image/png') {
+            reject(new Error('Image did not rasterize as PNG.'));
+            return;
+          }
+
+          blobToDataUrl(pngBlob).then(resolve, reject);
+        }, 'image/png');
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    image.onerror = () => reject(new Error('Image could not be loaded for PNG export.'));
+    image.src = src;
   });
 }
