@@ -1,7 +1,16 @@
 import { EXTRA_TRIBE_FAVORITES } from './config.js';
 import { filterYokaiByCategory } from './yokai-categories.js';
 import { applyFilters } from './filters.js';
-import { exportGridAsPng } from './export-image.js?v=4';
+import { exportGridAsPng } from './export-image.js?v=5';
+import {
+  applyStaticTranslations,
+  displaySlotLabel,
+  displayTribe,
+  displayYokaiName,
+  renderLanguageOptions,
+  setLanguage,
+  t,
+} from './i18n.js';
 import {
   getDisplayImageUrl,
   getImgurProxyUrl,
@@ -35,6 +44,7 @@ const elements = {
   grid: document.querySelector('#yokai-grid'),
   slots: document.querySelector('#favorite-slots'),
   searchInput: document.querySelector('#search-input'),
+  languageSelect: document.querySelector('#language-select'),
   exportListButton: document.querySelector('#export-list-button'),
   exportCodeButton: document.querySelector('#export-code-button'),
   exportImageButton: document.querySelector('#export-image-button'),
@@ -56,8 +66,19 @@ let currentMenuSlotId = null;
 export function wireEvents() {
   document.addEventListener('error', handleImageError, true);
 
+  renderLanguageOptions(elements.languageSelect);
+  applyStaticTranslations();
+
   elements.gameTabs.addEventListener('click', (event) => {
     event.stopPropagation();
+  });
+
+  elements.languageSelect.addEventListener('change', () => {
+    setLanguage(elements.languageSelect.value);
+    renderLanguageOptions(elements.languageSelect);
+    applyStaticTranslations();
+    refreshFilters();
+    renderAll();
   });
 
   elements.gameTabs.addEventListener('change', () => {
@@ -124,11 +145,11 @@ export function wireEvents() {
   });
 
   elements.exportListButton?.addEventListener('click', () => {
-    openOutputDialog('Favorite List', buildReadableExport(), false);
+    openOutputDialog(t('dialog.favoriteList'), buildReadableExport(), false);
   });
 
   elements.exportCodeButton?.addEventListener('click', () => {
-    openOutputDialog('Export Code', buildCodeExport(), false);
+    openOutputDialog(t('dialog.exportCode'), buildCodeExport(), false);
   });
 
   elements.exportImageButton.addEventListener('click', () => {
@@ -136,7 +157,7 @@ export function wireEvents() {
   });
 
   elements.importCodeButton?.addEventListener('click', () => {
-    openOutputDialog('Import Code', '', true);
+    openOutputDialog(t('dialog.importCode'), '', true);
   });
 
   elements.copyDialogButton.addEventListener('click', async () => {
@@ -146,9 +167,9 @@ export function wireEvents() {
     }
 
     await navigator.clipboard.writeText(value);
-    elements.copyDialogButton.textContent = 'Copied';
+    elements.copyDialogButton.textContent = t('actions.copied');
     window.setTimeout(() => {
-      elements.copyDialogButton.textContent = 'Copy';
+      elements.copyDialogButton.textContent = t('actions.copy');
     }, 900);
   });
 
@@ -267,16 +288,16 @@ function openSlotYokaiMenu(slotId) {
     return;
   }
 
-  openYokaiMenu(slot.label, getYokaiForSlot(slot), '', slot.id, false);
+  openYokaiMenu(displaySlotLabel(slot), getYokaiForSlot(slot), '', slot.id, false);
 }
 
 function openYokaiMenu(title, yokai, note, slotId, disabled) {
   currentMenuSlotId = slotId;
-  elements.yokaiMenuTitle.textContent = title;
   elements.yokaiMenuNote.textContent = note;
+  elements.yokaiMenuTitle.textContent = title || t('yokaiMenu.choose');
   elements.yokaiMenuList.innerHTML = yokai.length
     ? yokai.map((item) => renderYokaiMenuButton(item, slotId, disabled)).join('')
-    : '<div class="yokai-menu-empty">Choose row and column favorites first.</div>';
+    : `<div class="yokai-menu-empty">${escapeHtml(t('yokaiMenu.empty'))}</div>`;
   elements.yokaiMenuDialog.showModal();
 }
 
@@ -339,8 +360,8 @@ function renderYokaiMenuButton(yokai, slotId, disabled) {
 
   return `
     <button class="yokai-menu-option${assigned}" type="button" data-target-slot-id="${escapeHtml(slotId || '')}" data-yokai-id="${escapeHtml(yokai.id)}"${disabledAttribute}>
-      <img src="${escapeAttribute(getDisplayImageUrl(yokai.imageurl))}" alt="${escapeHtml(yokai.name)}" loading="lazy" referrerpolicy="no-referrer">
-      <span>${escapeHtml(yokai.name)}</span>
+      <img src="${escapeAttribute(getDisplayImageUrl(yokai.imageurl))}" alt="${escapeHtml(displayYokaiName(yokai))}" loading="lazy" referrerpolicy="no-referrer">
+      <span>${escapeHtml(displayYokaiName(yokai))}</span>
     </button>
   `;
 }
@@ -362,7 +383,10 @@ function buildReadableExport() {
   return state.slotDefinitions
     .map((slot) => {
       const yokai = state.favorites[slot.id];
-      return `${slot.label}: ${yokai ? `${yokai.name} (${yokai.tribe}, ${yokai.game})` : 'Empty'}`;
+      const yokaiLabel = yokai
+        ? `${displayYokaiName(yokai)} (${displayTribe(yokai.tribe)}, ${yokai.game})`
+        : t('states.empty');
+      return `${displaySlotLabel(slot)}: ${yokaiLabel}`;
     })
     .join('\n');
 }
@@ -376,12 +400,12 @@ function buildCodeExport() {
 
 async function runImageExport(button) {
   const target = document.querySelector('#yokai-grid');
-  const label = button?.textContent || 'Download PNG';
+  const label = button?.textContent || t('actions.downloadPng');
 
   if (button) {
     button.disabled = true;
     button.classList.add('is-busy');
-    button.textContent = 'Generando PNG…';
+    button.textContent = t('actions.generatingPng');
   }
 
   try {
@@ -389,8 +413,8 @@ async function runImageExport(button) {
   } catch (error) {
     console.error(error);
     openOutputDialog(
-      'Exportar imagen',
-      `No se pudo generar el PNG (${error?.message || 'error desconocido'}). Recarga la página con Ctrl+F5 e inténtalo de nuevo cuando las imágenes hayan cargado.`,
+      t('actions.exportImage'),
+      t('messages.exportImageError', { message: error?.message || 'error desconocido' }),
       false,
     );
   } finally {
@@ -407,6 +431,8 @@ function openOutputDialog(title, value, importMode) {
   elements.dialogOutput.hidden = importMode;
   elements.dialogInput.hidden = !importMode;
   elements.applyImportButton.hidden = !importMode;
+  elements.copyDialogButton.textContent = t('actions.copy');
+  elements.applyImportButton.textContent = t('actions.applyImport');
   elements.dialogOutput.value = value;
   elements.dialogInput.value = '';
   elements.dialog.showModal();

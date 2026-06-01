@@ -91,6 +91,7 @@ button {
 
 .header-actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 5px;
 }
@@ -116,6 +117,18 @@ button {
   font-size: 12px;
   font-weight: 900;
   text-shadow: 0 1px 1px #000;
+}
+
+.language-select {
+  height: 34px;
+  min-width: 92px;
+  border: 2px solid #555;
+  border-radius: 0;
+  padding: 0 8px;
+  color: #000;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 900;
 }
 
 .download-button {

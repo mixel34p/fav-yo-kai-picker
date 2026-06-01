@@ -3,6 +3,7 @@ import {
   getDisplayImageUrl,
   PLACEHOLDER_IMAGE,
 } from './image-url.js';
+import { t } from './i18n.js';
 
 const HTML2CANVAS_SRC = new URL('../vendor/html2canvas.min.js', import.meta.url).href;
 const EXPORT_SCALE = 2;
@@ -79,8 +80,8 @@ function buildExportFrame(gridElement, width) {
   const header = document.createElement('header');
   header.className = 'export-header';
   header.innerHTML = `
-    <p class="export-eyebrow">Ultimate Yo-kai Watch</p>
-    <h1 class="export-title">Mis favoritos Yo-kai</h1>
+    <p class="export-eyebrow">${escapeHtml(t('export.eyebrow'))}</p>
+    <h1 class="export-title">${escapeHtml(t('export.title'))}</h1>
     <p class="export-date">${formatExportDate()}</p>
   `;
 
@@ -91,7 +92,7 @@ function buildExportFrame(gridElement, width) {
 
   const footer = document.createElement('footer');
   footer.className = 'export-footer';
-  footer.textContent = 'fav-yo-kai-picker';
+  footer.textContent = t('export.footer');
 
   frame.append(header, body, footer);
   return frame;
@@ -104,7 +105,7 @@ function getDesktopExportWidth(gridElement) {
 }
 
 function formatExportDate() {
-  return new Date().toLocaleDateString('es-ES', {
+  return new Date().toLocaleDateString(t('export.dateLocale'), {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -113,7 +114,7 @@ function formatExportDate() {
 
 function buildFilename() {
   const stamp = new Date().toISOString().slice(0, 10);
-  return `yokai-favoritos-${stamp}.png`;
+  return `${t('export.filenamePrefix')}-${stamp}.png`;
 }
 
 function loadHtml2Canvas() {
@@ -335,4 +336,13 @@ function rasterizeImageAsPngDataUrl(src) {
     image.onerror = () => reject(new Error('Image could not be loaded for PNG export.'));
     image.src = src;
   });
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 }

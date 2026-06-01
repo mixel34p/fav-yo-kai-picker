@@ -1,17 +1,19 @@
 import { fetchAllYokai } from './api.js';
 import { EXCLUDED_GAMES, EXCLUDED_TRIBES, EXTRA_TRIBE_FAVORITES, GAME_ORDER, TRIBE_ORDER } from './config.js';
+import { initI18n, t } from './i18n.js';
 import { CATEGORY_FAVORITES } from './yokai-categories.js';
-import { refreshFilters, wireEvents } from './events.js?v=4';
+import { refreshFilters, wireEvents } from './events.js?v=5';
 import { normalizeImageUrl } from './image-url.js';
 import { renderAll, setLoading, showError, hideError } from './render.js';
 import { restoreState, setAllYokai, setSlotDefinitions, state } from './state.js';
 
-restoreState();
-wireEvents();
 init();
 
 async function init() {
   try {
+    await initI18n();
+    restoreState();
+    wireEvents();
     setLoading(true);
     hideError();
     const yokai = await fetchAllYokai();
@@ -21,7 +23,7 @@ async function init() {
     refreshFilters();
     renderAll();
   } catch (error) {
-    showError('Could not load Yo-kai data. Check the Supabase connection and try again.');
+    showError(t('messages.loadError'));
     console.error(error);
   } finally {
     setLoading(false);
@@ -32,10 +34,10 @@ function normalizeRows(rows) {
   return rows
     .map((row) => ({
       id: row.id,
-      name: row.name || 'Unknown Yo-kai',
-      tribe: row.tribe || 'Unknown',
+      name: row.name || t('states.unknownYokai'),
+      tribe: row.tribe || t('states.unknownTribe'),
       imageurl: normalizeImageUrl(row.imageurl),
-      game: row.game || 'Unknown Game',
+      game: row.game || t('states.unknownGame'),
     }))
     .filter((row) => !EXCLUDED_GAMES.includes(row.game) && !EXCLUDED_TRIBES.includes(row.tribe));
 }

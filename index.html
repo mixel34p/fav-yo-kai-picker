@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Ultimate Yo-kai Watch Favorite Picker">
-    <title>Ultimate Yo-kai Watch Favorite Picker</title>
+    <meta name="description" content="Selector de favoritos Yo-kai Watch">
+    <title>Selector de favoritos Yo-kai Watch</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
@@ -22,40 +22,41 @@
           <input id="search-input" type="search" autocomplete="off" placeholder="Yo-kai name">
         </div>
         <div class="header-actions">
-          <a class="button button-primary kofi-button" href="https://ko-fi.com/mixel34" target="_blank" rel="noopener noreferrer" aria-label="Support me on Ko-fi">
+          <select class="language-select" id="language-select" aria-label="Idioma"></select>
+          <a class="button button-primary kofi-button" href="https://ko-fi.com/mixel34" target="_blank" rel="noopener noreferrer" aria-label="Apoyame en Ko-fi">
             <svg class="kofi-icon" viewBox="0 0 64 44" aria-hidden="true" focusable="false">
               <path d="M8 2h37a13 13 0 0 1 0 26h-3c-2 8-9 14-18 14H8A6 6 0 0 1 2 36V8a6 6 0 0 1 6-6Z" fill="#fff"/>
               <path d="M46 10h-4v10h4a5 5 0 0 0 0-10Z" fill="#29abe0"/>
               <path d="M24 32 13 21c-6-6 2-16 9-9l2 2 2-2c7-7 15 3 9 9L24 32Z" fill="#ff5f5f"/>
             </svg>
-            <span>Support me!</span>
+            <span id="support-button-text">Apoyame!</span>
           </a>
-          <button class="button button-primary download-button" id="export-image-button" type="button">Download PNG</button>
+          <button class="button button-primary download-button" id="export-image-button" type="button">Descargar PNG</button>
         </div>
       </header>
 
       <main class="picker-stage">
         <section class="matrix-panel" aria-label="Yo-kai matrix">
           <div class="matrix-status">
-            <p id="active-slot-label">Pick a row, column, or overall favorite cell.</p>
+            <p id="active-slot-label">Elige una casilla de fila, columna o favorito global.</p>
             <p id="result-count">0 Yo-kai</p>
           </div>
           <div class="loading-state" id="loading-state" role="status" aria-live="polite">
             <span class="spinner" aria-hidden="true"></span>
-            <span>Loading Yo-kai...</span>
+            <span id="loading-text">Cargando Yo-kai...</span>
           </div>
           <div class="error-state" id="error-state" hidden></div>
           <div class="yokai-grid" id="yokai-grid" aria-label="Yo-kai results"></div>
         </section>
 
-        <section class="bottom-panel" aria-label="Favorite selections" hidden>
+        <section class="bottom-panel" aria-label="Selecciones favoritas" hidden>
           <div class="helper-area">
             <img src="assets/images/events/chest.png" alt="">
-            <p>Favorite cells are built into the matrix.</p>
+            <p id="helper-text">Las casillas favoritas estan integradas en la matriz.</p>
           </div>
           <div class="favorite-slots" id="favorite-slots" hidden></div>
           <div class="tribe-legend" id="tribe-legend"></div>
-          <p class="filled-counter" id="filled-count" hidden>0 filled</p>
+          <p class="filled-counter" id="filled-count" hidden>0 completados</p>
         </section>
       </main>
     </div>
@@ -63,14 +64,14 @@
     <dialog class="export-dialog" id="export-dialog">
       <form method="dialog" class="dialog-card">
         <div class="dialog-heading">
-          <h2 id="dialog-title">Export</h2>
-          <button class="icon-button" type="submit" aria-label="Close dialog">x</button>
+          <h2 id="dialog-title">Exportar</h2>
+          <button class="icon-button" id="close-dialog-button" type="submit" aria-label="Cerrar dialogo">x</button>
         </div>
         <textarea id="dialog-output" readonly></textarea>
         <input id="dialog-input" class="dialog-input" type="text" autocomplete="off" hidden>
         <div class="dialog-actions">
-          <button class="button button-secondary" id="copy-dialog-button" type="button">Copy</button>
-          <button class="button button-primary" id="apply-import-button" type="button" hidden>Import</button>
+          <button class="button button-secondary" id="copy-dialog-button" type="button">Copiar</button>
+          <button class="button button-primary" id="apply-import-button" type="button" hidden>Importar</button>
         </div>
       </form>
     </dialog>
@@ -78,8 +79,8 @@
     <dialog class="yokai-menu-dialog" id="yokai-menu-dialog">
       <form method="dialog" class="yokai-menu-card">
         <div class="dialog-heading">
-          <h2 id="yokai-menu-title">Choose Yo-kai</h2>
-          <button class="icon-button" type="submit" aria-label="Close Yo-kai menu">x</button>
+          <h2 id="yokai-menu-title">Elige un Yo-kai</h2>
+          <button class="icon-button" id="close-yokai-menu-button" type="submit" aria-label="Cerrar menu de Yo-kai">x</button>
         </div>
         <div class="yokai-menu-note" id="yokai-menu-note"></div>
         <div class="yokai-menu-list" id="yokai-menu-list"></div>
@@ -87,6 +88,6 @@
     </dialog>
 
     <script src="vendor/html2canvas.min.js" defer></script>
-    <script type="module" src="js/main.js?v=4"></script>
+    <script type="module" src="js/main.js?v=5"></script>
   </body>
 </html>

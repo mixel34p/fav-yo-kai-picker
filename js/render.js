@@ -1,4 +1,5 @@
 import { EXTRA_TRIBE_FAVORITES, GAME_COLORS, GAME_LOGOS, GAME_ORDER, TRIBE_COLORS, TRIBE_ICONS, TRIBE_ORDER } from './config.js';
+import { displayGame, displaySlotLabel, displayTribe, displayYokaiName, t } from './i18n.js';
 import { getCategoryColor } from './yokai-categories.js';
 import { getDisplayImageUrl } from './image-url.js';
 import { state } from './state.js';
@@ -30,7 +31,7 @@ export function renderGameTabs() {
   const games = ['all', ...orderedDistinct(state.allYokai, 'game', GAME_ORDER)];
   elements.gameTabs.innerHTML = games
     .map((game) => {
-      const label = game === 'all' ? 'All games' : game;
+      const label = game === 'all' ? t('filters.allGames') : displayGame(game);
       const selected = state.filters.game === game ? ' selected' : '';
       return `<option value="${escapeHtml(game)}"${selected}>${escapeHtml(label)}</option>`;
     })
@@ -41,7 +42,7 @@ export function renderTribeFilters() {
   const tribes = ['all', ...getMatrixTribes(state.allYokai)];
   elements.tribeFilters.innerHTML = tribes
     .map((tribe) => {
-      const label = tribe === 'all' ? 'All tribes' : tribe;
+      const label = tribe === 'all' ? t('filters.allTribes') : displayTribe(tribe);
       const selected = state.filters.tribe === tribe ? ' selected' : '';
       return `<option value="${escapeHtml(tribe)}"${selected}>${escapeHtml(label)}</option>`;
     })
@@ -55,12 +56,13 @@ export function renderTribeLegend() {
   elements.tribeLegend.innerHTML = tribes
     .map((tribe) => {
       const active = state.filters.tribe === tribe ? ' is-active' : '';
+      const label = displayTribe(tribe);
       return `
         <button class="tribe-row${active}" type="button" data-tribe="${escapeHtml(tribe)}">
           <span class="legend-dot" style="--tribe-color:${getTribeColor(tribe)}">
-            ${renderIcon(TRIBE_ICONS[tribe], tribe)}
+            ${renderIcon(TRIBE_ICONS[tribe], label)}
           </span>
-          <span class="tribe-name">${escapeHtml(tribe)}</span>
+          <span class="tribe-name">${escapeHtml(label)}</span>
           <span class="tribe-count">${counts.get(tribe)}</span>
         </button>
       `;
@@ -69,10 +71,10 @@ export function renderTribeLegend() {
 }
 
 export function renderGrid() {
-  elements.resultCount.textContent = `${state.filtered.length} Yo-kai`;
+  elements.resultCount.textContent = t('matrix.resultCount', { count: state.filtered.length });
 
   if (!state.filtered.length) {
-    elements.grid.innerHTML = '<div class="empty-state">No Yo-kai match these filters.</div>';
+    elements.grid.innerHTML = `<div class="empty-state">${escapeHtml(t('matrix.empty'))}</div>`;
     return;
   }
 
@@ -87,14 +89,14 @@ export function renderGrid() {
   const columns = `var(--game-width) repeat(${tribes.length}, var(--tribe-width)) var(--favorite-width)`;
 
   const headerCells = [
-    '<div class="corner-cell">Pick your<br>favorites!</div>',
+    `<div class="corner-cell">${t('matrix.corner')}</div>`,
     ...tribes.map((tribe) => `
-      <div class="tribe-header" style="--tribe-color:${getTribeColor(tribe)}" title="${escapeHtml(tribe)}">
-        ${renderIcon(TRIBE_ICONS[tribe], tribe)}
-        <span>${escapeHtml(tribe)}</span>
+      <div class="tribe-header" style="--tribe-color:${getTribeColor(tribe)}" title="${escapeHtml(displayTribe(tribe))}">
+        ${renderIcon(TRIBE_ICONS[tribe], displayTribe(tribe))}
+        <span>${escapeHtml(displayTribe(tribe))}</span>
       </div>
     `),
-    '<div class="favorite-header favorite-column-header">Favorite</div>',
+    `<div class="favorite-header favorite-column-header">${escapeHtml(t('matrix.favorite'))}</div>`,
   ];
 
   const bodyCells = games.flatMap((game) => [
@@ -111,9 +113,9 @@ export function renderGrid() {
     <div class="matrix" style="grid-template-columns:${columns}">
       ${headerCells.join('')}
       ${bodyCells.join('')}
-      <div class="overall-row-header">Favorite</div>
+      <div class="overall-row-header">${escapeHtml(t('matrix.favorite'))}</div>
       ${tribes.map((tribe) => renderOverallMatrixCell(`tribe-${slugify(tribe)}`, tribe)).join('')}
-      ${renderOverallMatrixCell('overall', 'Favorite', true)}
+      ${renderOverallMatrixCell('overall', t('matrix.favorite'), true)}
     </div>
     <div class="extra-favorites">
       ${extraFavoriteTribes.map((entry) => renderExtraFavoriteCell(entry)).join('')}
@@ -123,7 +125,7 @@ export function renderGrid() {
 
 export function renderFavoriteSlots() {
   const filled = Object.keys(state.favorites).length;
-  elements.filledCount.textContent = `${filled} filled`;
+  elements.filledCount.textContent = t('matrix.filled', { count: filled });
   elements.slots.innerHTML = '';
 }
 
@@ -189,13 +191,13 @@ function renderMatrixCell(game, tribe, byCell) {
 
   const content = selected
     ? `
-      <img class="cell-favorite-image" src="${imageSrc(selected)}" alt="${escapeHtml(selected.name)}" referrerpolicy="no-referrer">
-      <button class="clear-slot" type="button" data-clear-slot="${escapeHtml(slotId)}" aria-label="Clear ${escapeHtml(`${game} ${tribe}`)}">x</button>
+      <img class="cell-favorite-image" src="${imageSrc(selected)}" alt="${escapeHtml(displayYokaiName(selected))}" referrerpolicy="no-referrer">
+      <button class="clear-slot" type="button" data-clear-slot="${escapeHtml(slotId)}" aria-label="${escapeHtml(t('actions.clear', { label: `${displayGame(game)} ${displayTribe(tribe)}` }))}">x</button>
     `
     : '<span class="cell-placeholder">?</span>';
 
   return `
-    <div class="matrix-cell is-selectable${active}${filled}" role="button" tabindex="0" style="--tribe-color:${color}" data-slot-id="${escapeHtml(slotId)}" data-game="${escapeHtml(game)}" data-tribe="${escapeHtml(tribe)}" title="${escapeHtml(`${game} ${tribe}`)}">
+    <div class="matrix-cell is-selectable${active}${filled}" role="button" tabindex="0" style="--tribe-color:${color}" data-slot-id="${escapeHtml(slotId)}" data-game="${escapeHtml(game)}" data-tribe="${escapeHtml(tribe)}" title="${escapeHtml(`${displayGame(game)} ${displayTribe(tribe)}`)}">
       ${content}
     </div>
   `;
@@ -206,14 +208,14 @@ function renderGameFavoriteMatrixCell(slotId, game) {
   const active = state.activeSlotId === slotId ? ' is-active' : '';
   const filled = yokai ? ' is-filled' : '';
   const image = yokai
-    ? `<img class="cell-favorite-image" src="${imageSrc(yokai)}" alt="${escapeHtml(yokai.name)}" referrerpolicy="no-referrer">`
+    ? `<img class="cell-favorite-image" src="${imageSrc(yokai)}" alt="${escapeHtml(displayYokaiName(yokai))}" referrerpolicy="no-referrer">`
     : '<span class="cell-placeholder">?</span>';
   const clearButton = yokai
-    ? `<button class="clear-slot" type="button" data-clear-slot="${escapeHtml(slotId)}" aria-label="Clear ${escapeHtml(game)} favorite">x</button>`
+    ? `<button class="clear-slot" type="button" data-clear-slot="${escapeHtml(slotId)}" aria-label="${escapeHtml(t('actions.clear', { label: t('slots.gameFavorite', { game: displayGame(game) }) }))}">x</button>`
     : '';
 
   return `
-    <div class="matrix-cell game-favorite-cell is-selectable${active}${filled}" role="button" tabindex="0" style="--game-color:${getGameColor(game)}" data-slot-id="${escapeHtml(slotId)}" title="${escapeHtml(game)} Favorite">
+    <div class="matrix-cell game-favorite-cell is-selectable${active}${filled}" role="button" tabindex="0" style="--game-color:${getGameColor(game)}" data-slot-id="${escapeHtml(slotId)}" title="${escapeHtml(t('slots.gameFavorite', { game: displayGame(game) }))}">
       ${image}
       ${clearButton}
     </div>
@@ -230,10 +232,10 @@ function renderExtraFavoriteCell({ slotId, label, accentColor }) {
   const filled = yokai ? ' is-filled' : '';
   const accent = accentColor ? ` style="--extra-accent:${accentColor}"` : '';
   const image = yokai
-    ? `<img src="${imageSrc(yokai)}" alt="${escapeHtml(yokai.name)}" referrerpolicy="no-referrer">`
+    ? `<img src="${imageSrc(yokai)}" alt="${escapeHtml(displayYokaiName(yokai))}" referrerpolicy="no-referrer">`
     : '<span class="slot-placeholder">?</span>';
   const clearButton = yokai
-    ? `<button class="clear-slot" type="button" data-clear-slot="${escapeHtml(slotId)}" aria-label="Clear ${escapeHtml(label)}">x</button>`
+    ? `<button class="clear-slot" type="button" data-clear-slot="${escapeHtml(slotId)}" aria-label="${escapeHtml(t('actions.clear', { label }))}">x</button>`
     : '';
 
   return `
@@ -250,15 +252,15 @@ function renderOverallMatrixCell(slotId, tribe, isGlobal = false) {
   const filled = yokai ? ' is-filled' : '';
   const color = isGlobal ? '' : ` style="--tribe-color:${getTribeColor(tribe)}"`;
   const image = yokai
-    ? `<img class="cell-favorite-image" src="${imageSrc(yokai)}" alt="${escapeHtml(yokai.name)}" referrerpolicy="no-referrer">`
+    ? `<img class="cell-favorite-image" src="${imageSrc(yokai)}" alt="${escapeHtml(displayYokaiName(yokai))}" referrerpolicy="no-referrer">`
     : '<span class="cell-placeholder">?</span>';
   const clearButton = yokai
-    ? `<button class="clear-slot" type="button" data-clear-slot="${escapeHtml(slotId)}" aria-label="Clear ${escapeHtml(tribe)}">x</button>`
+    ? `<button class="clear-slot" type="button" data-clear-slot="${escapeHtml(slotId)}" aria-label="${escapeHtml(t('actions.clear', { label: displayTribe(tribe) }))}">x</button>`
     : '';
   const rainbow = isGlobal ? ' is-rainbow' : '';
 
   return `
-    <div class="matrix-cell overall-matrix-cell is-selectable${active}${filled}${rainbow}" role="button" tabindex="0"${color} data-slot-id="${escapeHtml(slotId)}" title="${escapeHtml(tribe)}">
+    <div class="matrix-cell overall-matrix-cell is-selectable${active}${filled}${rainbow}" role="button" tabindex="0"${color} data-slot-id="${escapeHtml(slotId)}" title="${escapeHtml(isGlobal ? tribe : displayTribe(tribe))}">
       ${image}
       ${clearButton}
     </div>
@@ -268,10 +270,10 @@ function renderOverallMatrixCell(slotId, tribe, isGlobal = false) {
 function renderGameLogo(game) {
   const src = GAME_LOGOS[game];
   if (src) {
-    return `<img src="${escapeAttribute(src)}" alt="${escapeHtml(game)}">`;
+    return `<img src="${escapeAttribute(src)}" alt="${escapeHtml(displayGame(game))}">`;
   }
 
-  return `<span class="game-fallback">${escapeHtml(game)}</span>`;
+  return `<span class="game-fallback">${escapeHtml(displayGame(game))}</span>`;
 }
 
 function renderIcon(src, alt) {
@@ -297,14 +299,14 @@ function getMatrixTribes(rows) {
 function getExtraFavoriteTribes() {
   return EXTRA_TRIBE_FAVORITES.map((tribe) => ({
     slotId: `tribe-${slugify(tribe)}`,
-    label: `Favorite ${tribe}`,
+    label: t('slots.tribeFavorite', { tribe: displayTribe(tribe) }),
     accentColor: getTribeColor(tribe),
   })).concat(
     state.slotDefinitions
       .filter((slot) => slot.type === 'category')
       .map((slot) => ({
         slotId: slot.id,
-        label: slot.label,
+        label: displaySlotLabel(slot),
         accentColor: slot.color || getCategoryColor(slot.category),
       })),
   );
