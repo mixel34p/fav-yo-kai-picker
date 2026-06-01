@@ -1,0 +1,104 @@
+.export-mount {
+  position: fixed;
+  left: -20000px;
+  top: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.export-frame {
+  box-sizing: border-box;
+  width: max-content;
+  max-width: none;
+  padding: 28px 32px 24px;
+  color: #fff;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(245, 197, 66, 0.14), transparent 55%),
+    linear-gradient(165deg, #1c1c28 0%, #0b0b10 48%, #050508 100%);
+  border: 5px solid #f5c542;
+  outline: 3px solid #42230d;
+  outline-offset: -8px;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.export-header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.export-eyebrow {
+  margin: 0 0 6px;
+  color: #f5c542;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px #000;
+}
+
+.export-title {
+  margin: 0;
+  color: #fff;
+  font-family: "Fredoka One", Arial, sans-serif;
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1.05;
+  text-shadow:
+    0 3px 0 #000,
+    0 0 24px rgba(245, 197, 66, 0.28);
+}
+
+.export-date {
+  margin: 8px 0 0;
+  color: #c8d2e4;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.export-body {
+  margin: 0 auto;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+}
+
+.export-footer {
+  margin-top: 14px;
+  color: #6f7d94;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.export-frame .yokai-grid,
+.export-frame .yokai-grid.is-exporting {
+  max-height: none !important;
+  overflow: visible !important;
+  background: #111;
+}
+
+.export-frame .is-exporting .clear-slot,
+.export-frame .is-exporting .matrix-cell.is-active,
+.export-frame .is-exporting .matrix-cell:focus-visible,
+.export-frame .is-exporting .overall-favorite-card.is-active .overall-favorite-box {
+  outline: none !important;
+}
+
+.export-frame .is-exporting .clear-slot {
+  display: none !important;
+}
+
+.export-frame .is-exporting .matrix-cell.is-active,
+.export-frame .is-exporting .matrix-cell.is-filled {
+  filter: none;
+}
+
+.download-button.is-busy {
+  cursor: wait;
+  filter: brightness(0.92);
+  opacity: 0.85;
+}

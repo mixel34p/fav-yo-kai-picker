@@ -120,14 +120,6 @@ button {
   letter-spacing: 0;
 }
 
-.export-mount {
-  position: fixed;
-  left: -100000px;
-  top: 0;
-  z-index: -1;
-  pointer-events: none;
-}
-
 .button:hover {
   filter: brightness(1.12);
 }
